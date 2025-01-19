@@ -1,0 +1,805 @@
+openapi: 3.0.0
+info:
+  title: Balano API
+  summary: Balano bridges the gap between patient and provider.
+  description: |
+    Balano is a system to track therapy sessions, initially built for use at Dr. Beema Clinic for Child Development. Following either ABA or IBT standards, therapists can report and monitor progress of a child patient, while supervisors can also generate reports and monitor the activities made.
+    Activities are split into categories based on the individualized forms of therapy assigned.
+  version: 0.1.0
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+
+    ValidationError:
+      type: object
+      required:
+        - message
+        - errors
+      properties:
+        message:
+          type: string
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - path
+              - message
+            properties:
+              path:
+                type: string
+              message:
+                type: string
+
+    PaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+        pagination:
+          type: object
+          properties:
+            total:
+              type: integer
+            page:
+              type: integer
+            pages:
+              type: integer
+            limit:
+              type: integer
+
+    Patient:
+      type: object
+      properties:
+        id:
+          type: number
+          format: int8
+          description: A unique identifier for the patient.
+        name:
+          type: string
+          description: Full name of the patient.
+        dob:
+          type: string
+          format: date
+          description: Patient Date of Birth
+        guardian:
+          type: string
+          description: Full name of the parent's guardian.
+        status:
+          type: string
+          enum: ["ACTIVE", "INACTIVE", null]
+          description: Represents the current patient status.
+        guardian_number:
+          type: integer
+          nullable: true
+          description: Guardian's phone number (optional).
+        guardian_email:
+          type: string
+          nullable: true
+          description: Guardian's email address (optional).
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp when the patient record was created.
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp when the patient record was last updated.
+        therapist_id:
+          type: number
+          description: The unique identifier of the assigned therapist.
+      required:
+        - name
+        - dob
+        - status
+        - therapist_id
+
+    Therapist:
+      type: object
+      properties:
+        id:
+          type: number
+          format: int8
+          description: A unique identifier for the staff member.
+        name:
+          type: string
+          description: The name of the staff member.
+        join_date:
+          type: string
+          format: date
+          description: Date of which the staff member commenced.
+        expected_hours:
+          type: number
+          description: The number of expected hours per week worked.
+        role:
+          type: string
+          enum:
+            - admin
+            - therapist
+            - doctor
+          description: The role of the staff member in the organization.
+      required:
+        - id
+        - name
+        - role
+
+    Session:
+      type: object
+      properties:
+        id:
+          type: number
+          description: The unique identifier for the session.
+        patient_id:
+          type: number
+          description: The unique patient identifier involved with the session.
+        staff_id:
+          type: number
+          description: The unique staff identifier administering the session.
+        start_time:
+          type: string
+          format: timestamp
+          description: The start time of the overall session.
+        end_time:
+          type: string
+          format: timestamp
+          description: The end time of the overall session.
+        description:
+          type: string
+          description: A summarized description of the overall session.
+        payment_received:
+          type: boolean
+          description: A representation of whether the session has been paid.
+
+    Activity:
+      type: object
+      properties:
+        id:
+          type: number
+          description: The unique identifier for the activity.
+        session_id:
+          type: number
+          description: The associated session for the activity.
+        duration_minutes:
+          type: number
+          format: timestamp
+          description: The duration of the activity in minutes.
+        description:
+          type: string
+          description: A summarized description of the activity.
+        payment_received:
+          type: boolean
+          description: A representation of whether the activity has been paid.
+
+paths:
+  # Patient endpoints
+  /patients:
+    post:
+      summary: Create a new patient
+      tags: [Patients]
+      security: [BearerAuth: []]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Patient"
+      responses:
+        "201":
+          description: Patient successfully created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Patient"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+    get:
+      summary: List all patients
+      tags: [Patients]
+      security: [BearerAuth: []]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: List of patients retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+
+  /patients/{id}:
+    get:
+      summary: Get patient by ID
+      tags: [Patients]
+      security: [BearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Patient found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Patient"
+    put:
+      summary: Update patient information
+      tags: [Patients]
+      security: [BearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Patient"
+      responses:
+        "200":
+          description: Patient updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Patient"
+    delete:
+      summary: Delete a patient
+      tags: [Patients]
+      security: [BearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Patient successfully deleted
+
+  # Therapist endpoints
+  /therapists:
+    post:
+      summary: Create a new therapist
+      tags: [Therapists]
+      security: [BearerAuth: []]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Therapist"
+      responses:
+        "201":
+          description: Therapist created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Therapist"
+    get:
+      summary: List all therapists
+      tags: [Therapists]
+      security: [BearerAuth: []]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: List of therapists retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+
+  /therapists/{id}:
+    get:
+      summary: Get therapist by ID
+      tags: [Therapists]
+      security: [BearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Therapist found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Therapist"
+    put:
+      summary: Update therapist information
+      tags: [Therapists]
+      security: [BearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Therapist"
+      responses:
+        "200":
+          description: Therapist updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Therapist"
+    delete:
+      summary: Delete a therapist
+      tags: [Therapists]
+      security: [BearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Therapist successfully deleted
+
+  # Session endpoints
+  /sessions:
+    post:
+      summary: Create a new session
+      tags: [Sessions]
+      security: [BearerAuth: []]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Session"
+      responses:
+        "201":
+          description: Session created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+    get:
+      summary: List all sessions
+      tags: [Sessions]
+      security: [BearerAuth: []]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: List of sessions retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+
+  /sessions/{id}:
+    get:
+      summary: Get session by ID
+      tags: [Sessions]
+      security: [BearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Session found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+    put:
+      summary: Update session information
+      tags: [Sessions]
+      security: [BearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Session"
+      responses:
+        "200":
+          description: Session updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+    delete:
+      summary: Delete a session
+      tags: [Sessions]
+      security: [BearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Session successfully deleted
+
+  /sessions/{id}/details:
+    get:
+      summary: Get detailed session information
+      tags: [Sessions]
+      security: [BearerAuth: []]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Detailed session information retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session:
+                    $ref: "#/components/schemas/Session"
+                  patient:
+                    $ref: "#/components/schemas/Patient"
+                  therapist:
+                    $ref: "#/components/schemas/Therapist"
+                  activities:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Activity"
+
+  # Patient-specific session endpoints
+  /patients/{patient_id}/sessions:
+    get:
+      summary: Get all sessions for a patient
+      tags: [Sessions, Patients]
+      security: [BearerAuth: []]
+      parameters:
+        - name: patient_id
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: List of sessions retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+
+  /patients/{patient_id}/sessions/{session_id}:
+    get:
+      summary: Get specific session for a patient
+      tags: [Sessions, Patients]
+      security: [BearerAuth: []]
+      parameters:
+        - name: patient_id
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Session retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+
+  # Therapist-specific session endpoints
+  /therapists/{therapist_id}/sessions:
+    get:
+      summary: Get all sessions for a therapist
+      tags: [Sessions, Therapists]
+      security: [BearerAuth: []]
+      parameters:
+        - name: therapist_id
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: List of sessions retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+
+  /therapists/{therapist_id}/sessions/{session_id}/activities:
+    post:
+      summary: Create a new activity
+      tags: [Activities]
+      security: [BearerAuth: []]
+      parameters:
+        - name: therapist_id
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Activity"
+      responses:
+        "201":
+          description: Activity created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Activity"
+        "404":
+          description: Session or therapist not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    get:
+      summary: List all activities in a session
+      tags: [Activities]
+      security: [BearerAuth: []]
+      parameters:
+        - name: therapist_id
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: List of activities retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+        "404":
+          description: Session or therapist not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /therapists/{therapist_id}/sessions/{session_id}/activities/{id}:
+    get:
+      summary: Get specific activity
+      tags: [Activities]
+      security: [BearerAuth: []]
+      parameters:
+        - name: therapist_id
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Activity retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Activity"
+        "404":
+          description: Activity, session, or therapist not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      summary: Update activity information
+      tags: [Activities]
+      security: [BearerAuth: []]
+      parameters:
+        - name: therapist_id
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Activity"
+      responses:
+        "200":
+          description: Activity updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Activity"
+        "404":
+          description: Activity, session, or therapist not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      summary: Delete an activity
+      tags: [Activities]
+      security: [BearerAuth: []]
+      parameters:
+        - name: therapist_id
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Activity successfully deleted
+        "404":
+          description: Activity, session, or therapist not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
