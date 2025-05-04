@@ -1,0 +1,8 @@
+# config/oapi-server.yaml
+package: api
+generate:
+  models: true
+  fiber-server: true
+additional-imports:
+  - package: "github.com/aahiltn/balano/internal/db/models"
+    alias: models

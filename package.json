@@ -11,11 +11,13 @@
   },
   "dependencies": {
     "axios": "^1.7.9",
+    "dotenv": "^16.4.7",
     "drizzle-kit": "^0.30.2",
     "drizzle-orm": "^0.38.4",
     "hono": "^4.6.17",
     "openapi-typescript": "^7.5.2",
     "pg": "^8.13.1",
+    "postgres": "^3.4.5",
     "zod": "^3.24.1"
   }
 }

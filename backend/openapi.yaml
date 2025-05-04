@@ -1,9 +1,9 @@
-openapi: 3.0.0
+openapi: "3.0.0"
 info:
-  title: Balano API
-  summary: Balano bridges the gap between patient and provider.
+  title: System API
+  summary: Bridges the gap between patient and provider.
   description: |
-    Balano is a system to track therapy sessions, initially built for use at Dr. Beema Clinic for Child Development. Following either ABA or IBT standards, therapists can report and monitor progress of a child patient, while supervisors can also generate reports and monitor the activities made.
+    This is a system to track therapy sessions, initially built for use at Dr. Beema Clinic for Child Development. Following either ABA or IBT standards, therapists can report and monitor progress of a child patient, while supervisors can also generate reports and monitor the activities made.
     Activities are split into categories based on the individualized forms of therapy assigned.
   version: 0.1.0
 
@@ -63,12 +63,30 @@ components:
             limit:
               type: integer
 
+    Guardian:
+      type: object
+      properties:
+        id:
+          type: string
+          format: UUID
+          description: A unique identifier for the patient.
+        name:
+          type: string
+          description: Full name of the patient.
+        phone_number:
+          type: string
+          nullable: true
+          description: Guardian's phone number (optional).
+        email:
+          type: string
+          nullable: true
+          description: Guardian's email address (optional).
     Patient:
       type: object
       properties:
         id:
-          type: number
-          format: int8
+          type: string
+          format: UUID
           description: A unique identifier for the patient.
         name:
           type: string
@@ -77,21 +95,9 @@ components:
           type: string
           format: date
           description: Patient Date of Birth
-        guardian:
-          type: string
-          description: Full name of the parent's guardian.
-        status:
-          type: string
-          enum: ["ACTIVE", "INACTIVE", null]
+        active:
+          type: boolean
           description: Represents the current patient status.
-        guardian_number:
-          type: integer
-          nullable: true
-          description: Guardian's phone number (optional).
-        guardian_email:
-          type: string
-          nullable: true
-          description: Guardian's email address (optional).
         created_at:
           type: string
           format: date-time
@@ -100,21 +106,41 @@ components:
           type: string
           format: date-time
           description: Timestamp when the patient record was last updated.
-        therapist_id:
-          type: number
-          description: The unique identifier of the assigned therapist.
+        guardian_id:
+          type: string
+          format: UUID
+          description: ID of the patient's guardian.
+        doctor_id:
+          type: string
+          format: UUID
+          description: The primary physician for the patient.
+        staff_id:
+          type: string
+          format: UUID``
+          description: The unique identifier of the assigned staff member.
+        prescribed_medicines:
+          type: array
+          description: List of prescribed medicines
+          items:
+            type: string
+        therapy_types:
+          type: string
+          enum:
+            - TRM
+            - Group Therapy
+
       required:
         - name
         - dob
         - status
-        - therapist_id
+        - staff_id
 
-    Therapist:
+    Staff:
       type: object
       properties:
         id:
-          type: number
-          format: int8
+          type: string
+          format: UUID
           description: A unique identifier for the staff member.
         name:
           type: string
@@ -132,35 +158,65 @@ components:
             - admin
             - therapist
             - doctor
+            - behavioral_analyst
           description: The role of the staff member in the organization.
       required:
         - id
         - name
         - role
 
+    Branch:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: The unique identifier for the branch.
+        location:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        opening_date:
+          type: string
+          format: date-time
+          description: start date of operations for this branch.
+          nullable: true
+        active:
+          type: boolean
     Session:
       type: object
       properties:
         id:
-          type: number
+          type: string
+          format: UUID
           description: The unique identifier for the session.
         patient_id:
-          type: number
+          type: string
+          format: UUID
           description: The unique patient identifier involved with the session.
         staff_id:
-          type: number
+          type: string
+          format: UUID
           description: The unique staff identifier administering the session.
         start_time:
           type: string
-          format: timestamp
+          format: date-time
           description: The start time of the overall session.
         end_time:
           type: string
-          format: timestamp
+          format: date-time
           description: The end time of the overall session.
         description:
           type: string
           description: A summarized description of the overall session.
+        response:
+          type: string
+          description: A measurement of the patient's response to the treatment of the session.
+          enum:
+            - High
+            - Moderate
+            - Low
         payment_received:
           type: boolean
           description: A representation of whether the session has been paid.
@@ -169,14 +225,15 @@ components:
       type: object
       properties:
         id:
-          type: number
+          type: string
+          format: UUID
           description: The unique identifier for the activity.
         session_id:
-          type: number
+          type: string
+          format: UUID
           description: The associated session for the activity.
         duration_minutes:
           type: number
-          format: timestamp
           description: The duration of the activity in minutes.
         description:
           type: string
@@ -184,6 +241,29 @@ components:
         payment_received:
           type: boolean
           description: A representation of whether the activity has been paid.
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    TokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/Staff"
+      required:
+        - token
+        - user
 
 paths:
   # Patient endpoints
@@ -289,28 +369,28 @@ paths:
         "204":
           description: Patient successfully deleted
 
-  # Therapist endpoints
-  /therapists:
+  # Staff endpoints
+  /staff:
     post:
-      summary: Create a new therapist
-      tags: [Therapists]
+      summary: Create a new staff person.
+      tags: [Staff]
       security: [BearerAuth: []]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Therapist"
+              $ref: "#/components/schemas/Staff"
       responses:
         "201":
-          description: Therapist created successfully
+          description: Staff created successfully.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Therapist"
+                $ref: "#/components/schemas/Staff"
     get:
-      summary: List all therapists
-      tags: [Therapists]
+      summary: List all staff members.
+      tags: [Staff]
       security: [BearerAuth: []]
       parameters:
         - name: page
@@ -325,16 +405,16 @@ paths:
             default: 20
       responses:
         "200":
-          description: List of therapists retrieved successfully
+          description: List of staff retrieved successfully
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/PaginatedResponse"
 
-  /therapists/{id}:
+  /staff/{id}:
     get:
-      summary: Get therapist by ID
-      tags: [Therapists]
+      summary: Get staff by ID
+      tags: [Staff]
       security: [BearerAuth: []]
       parameters:
         - name: id
@@ -348,10 +428,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Therapist"
+                $ref: "#/components/schemas/Staff"
     put:
-      summary: Update therapist information
-      tags: [Therapists]
+      summary: Update staff information
+      tags: [Staff]
       security: [BearerAuth: []]
       parameters:
         - name: id
@@ -364,17 +444,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Therapist"
+              $ref: "#/components/schemas/Staff"
       responses:
         "200":
-          description: Therapist updated successfully
+          description: Staff updated successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Therapist"
+                $ref: "#/components/schemas/Staff"
     delete:
-      summary: Delete a therapist
-      tags: [Therapists]
+      summary: Delete a staff member from application.
+      tags: [Staff]
       security: [BearerAuth: []]
       parameters:
         - name: id
@@ -384,7 +464,7 @@ paths:
             type: number
       responses:
         "204":
-          description: Therapist successfully deleted
+          description: Staff member successfully deleted
 
   # Session endpoints
   /sessions:
@@ -516,8 +596,8 @@ paths:
                     $ref: "#/components/schemas/Session"
                   patient:
                     $ref: "#/components/schemas/Patient"
-                  therapist:
-                    $ref: "#/components/schemas/Therapist"
+                  staff:
+                    $ref: "#/components/schemas/Staff"
                   activities:
                     type: array
                     items:
@@ -588,13 +668,13 @@ paths:
                 $ref: "#/components/schemas/Session"
 
   # Therapist-specific session endpoints
-  /therapists/{therapist_id}/sessions:
+  /staff/{id}/sessions:
     get:
-      summary: Get all sessions for a therapist
-      tags: [Sessions, Therapists]
+      summary: Get all sessions for a staff member
+      tags: [Sessions, Staff]
       security: [BearerAuth: []]
       parameters:
-        - name: therapist_id
+        - name: id
           in: path
           required: true
           schema:
@@ -627,13 +707,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/PaginatedResponse"
 
-  /therapists/{therapist_id}/sessions/{session_id}/activities:
+  /staff/{staff_id}/sessions/{session_id}/activities:
     post:
       summary: Create a new activity
       tags: [Activities]
       security: [BearerAuth: []]
       parameters:
-        - name: therapist_id
+        - name: staff_id
           in: path
           required: true
           schema:
@@ -657,7 +737,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Activity"
         "404":
-          description: Session or therapist not found
+          description: Session or staff member not found
           content:
             application/json:
               schema:
@@ -667,7 +747,7 @@ paths:
       tags: [Activities]
       security: [BearerAuth: []]
       parameters:
-        - name: therapist_id
+        - name: staff_id
           in: path
           required: true
           schema:
@@ -701,13 +781,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
 
-  /therapists/{therapist_id}/sessions/{session_id}/activities/{id}:
+  /staff/{staff_id}/sessions/{session_id}/activities/{id}:
     get:
       summary: Get specific activity
       tags: [Activities]
       security: [BearerAuth: []]
       parameters:
-        - name: therapist_id
+        - name: staff_id
           in: path
           required: true
           schema:
@@ -730,7 +810,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Activity"
         "404":
-          description: Activity, session, or therapist not found
+          description: Activity, session, or staff member not found
           content:
             application/json:
               schema:
@@ -740,7 +820,7 @@ paths:
       tags: [Activities]
       security: [BearerAuth: []]
       parameters:
-        - name: therapist_id
+        - name: staff_id
           in: path
           required: true
           schema:
@@ -779,7 +859,7 @@ paths:
       tags: [Activities]
       security: [BearerAuth: []]
       parameters:
-        - name: therapist_id
+        - name: staff_id
           in: path
           required: true
           schema:
@@ -798,7 +878,7 @@ paths:
         "204":
           description: Activity successfully deleted
         "404":
-          description: Activity, session, or therapist not found
+          description: Activity, session, or staff member not found
           content:
             application/json:
               schema:
