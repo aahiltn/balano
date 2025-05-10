@@ -11,17 +11,14 @@ import (
 	"github.com/watchakorn-18k/scalar-go"
 )
 
-type API struct {}
-
-// Start initializes and runs the API server
 func Start() {
 	app := fiber.New()
 	app.Use(logger.New())
-	app.Use("/api/docs", func(c *fiber.Ctx) error {
+	app.Use("/docs", func(c *fiber.Ctx) error {
 		htmlContent, err := scalar.ApiReferenceHTML(&scalar.Options{
 			SpecURL: "openapi.yaml",
 			CustomOptions: scalar.CustomOptions{
-				PageTitle: "Balano API Documentation",
+				PageTitle: "Palaam API Documentation",
 			},
 			DarkMode: true,
 		})
@@ -34,8 +31,7 @@ func Start() {
 	})
 	app.Use(recover.New())
 	app.Use(cors.New())
-	api := app.Group("/api/")
-	api.Get("/hello", func(c *fiber.Ctx) error {
+	app.Get("/hello", func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusOK).JSON(&fiber.Map{
 			"message": "Hello World",
 		})

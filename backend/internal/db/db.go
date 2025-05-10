@@ -1,4 +1,5 @@
 // internal/database/db.go
+
 package database
 
 import (
@@ -10,6 +11,7 @@ import (
 	"gorm.io/gorm/logger"
 
 	"palaam/internal/config"
+	"palaam/internal/models" // Import models package
 )
 
 func NewConnection(config *config.DB) (*gorm.DB, error) {
@@ -22,6 +24,21 @@ func NewConnection(config *config.DB) (*gorm.DB, error) {
 	
 	if err != nil {
 		return nil, err
+	}
+	
+	// AutoMigrate to create/update tables based on models
+	err = db.AutoMigrate(
+		&models.Activity{},
+		&models.Patient{},
+		&models.Guardian{},
+		&models.Staff{},
+		&models.Medicine{},
+		&models.OperatingHours{},
+		&models.Branch{},
+		&models.Session{},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to migrate database schema: %w", err)
 	}
 	
 	sqlDB, err := db.DB()

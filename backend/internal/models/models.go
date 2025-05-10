@@ -2,82 +2,115 @@
 package models
 
 import (
-	"database/sql"
 	"time"
 )
 
 type Activity struct {
-	ID              string          `db:"id"`
-	Description     sql.NullString  `db:"description"`
-	DurationMinutes sql.NullFloat64 `db:"duration_minutes"`
-	PaymentReceived sql.NullBool    `db:"payment_received"`
-	SessionID       sql.NullString  `db:"session_id"`
-	CreatedAt       time.Time       `db:"created_at"`
-	UpdatedAt       time.Time       `db:"updated_at"`
+	ID              string     `gorm:"primaryKey;type:uuid"`
+	Description     *string    `gorm:"type:text"`
+	DurationMinutes *float64
+	PaymentReceived *bool
+	SessionID       *string    `gorm:"type:uuid"`
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+
+	// Relationships
+	Session         *Session   `gorm:"foreignKey:SessionID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
 type Patient struct {
-	ID           string         `db:"id"`
-	Name         string         `db:"name"`
-	Dob          string         `db:"dob"`
-	Active       sql.NullBool   `db:"active"`
-	GuardianID   sql.NullString `db:"guardian_id"`
-	DoctorID     sql.NullString `db:"doctor_id"`
-	StaffID      string         `db:"staff_id"`
-	TherapyTypes sql.NullString `db:"therapy_types"`
-	CreatedAt    time.Time      `db:"created_at"`
-	UpdatedAt    time.Time      `db:"updated_at"`
+	ID              string    `gorm:"primaryKey;type:uuid"`
+	Name            string
+	Dob             string
+	Active          *bool
+	DoctorID        *string   `gorm:"type:uuid"`
+	StaffID         string    `gorm:"type:uuid"`
+	PrimaryBranchID *int      `gorm:"type:int"`
+	TherapyTypes    *string
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+
+	// Relationships
+	Guardians []*Guardian `gorm:"many2many:patient_guardians;"`
+	Doctor    *Staff      `gorm:"foreignKey:DoctorID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	Staff     Staff       `gorm:"foreignKey:StaffID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+	Branch    Branch      `gorm:"foreignKey:PrimaryBranchID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
 type Guardian struct {
-	ID          string         `db:"id"`
-	Name        string         `db:"name"`
-	PhoneNumber sql.NullString `db:"phone_number"`
-	Email       sql.NullString `db:"email"`
+	ID          string    `gorm:"primaryKey;type:uuid"`
+	Name        string
+	PhoneNumber *string
+	Email       *string
+
+	// Relationships
+	Patients []*Patient `gorm:"many2many:patient_guardians;"` 
 }
 
 type StaffRole string
 
 type Staff struct {
-	ID            string    `db:"id"`
-	Name          string    `db:"name"`
-	JoinDate      time.Time `db:"join_date"`
-	ExpectedHours int       `db:"expected_hours"`
-	Role          StaffRole `db:"role"`
+	ID              string        `gorm:"primaryKey;type:uuid"`
+	Name            string
+	JoinDate        time.Time
+	ExpectedHours   int
+	Role            StaffRole     `gorm:"type:varchar(50)"`
+	PrimaryBranchID *int 		  `gorm:"type:int"`
+
+	// Relationships
+	Patients      []Patient  `gorm:"foreignKey:StaffID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+	Sessions      []Session  `gorm:"foreignKey:StaffID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+	Medicines     []Medicine `gorm:"foreignKey:PrescriberID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+	Branch 		  Branch 	 `gorm:"foreignKey:PrimaryBranchID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
 
-type Medicines struct {
-	ID           string         `db:"id"`
-	Name         string         `db:"name"`
-	BrandName    sql.NullString `db:"brand_name"`
-	PatientID    string         `db:"patient_id"`
-	PrescriberID string         `db:"prescriber_id"`
+type Medicine struct {
+	ID           string  `gorm:"primaryKey;type:uuid"`
+	Name         string
+	BrandName    *string
+	PatientID    string  `gorm:"type:uuid"`
+	PrescriberID string  `gorm:"type:uuid"` // Refers to Staff (Doctor)
+
+	// Relationships
+	Patient      Patient `gorm:"foreignKey:PatientID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Prescriber   Staff   `gorm:"foreignKey:PrescriberID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
 }
 
 type OperatingHours struct {
-	DayOfWeek int    `db:"day_of_week"` // 0 for Sunday, 1 for Monday, etc.
-	OpenTime  string `db:"open_time"`   // Store as "HH:MM" format
-	CloseTime string `db:"close_time"`  // Store as "HH:MM" format
-	IsClosed  bool   `db:"is_closed"`   // If the branch is closed on this day
-	BranchID  int16  `db:"branch_id"`   // Foreign key to Branch
+	DayOfWeek int16  `gorm:"primaryKey"` // 0 for Sunday, etc.
+	OpenTime  string `gorm:"type:varchar(5)"`
+	CloseTime string `gorm:"type:varchar(5)"`
+	IsClosed  bool
+	BranchID  int  `gorm:"primaryKey"` // Composite PK
+
+	// Relationships
+	Branch    Branch `gorm:"foreignKey:BranchID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 type Branch struct {
-	ID          int            `db:"id"`
-	Location    sql.NullString `db:"location"`
-	OpeningDate time.Time      `db:"opening_date"`
-	Active      bool           `db:"active"`
+	ID             int              `gorm:"primaryKey;autoIncrement"`
+	Location       *string
+	OpeningDate    time.Time
+	Active         bool
+
+	// Relationships
+	OperatingHours []OperatingHours `gorm:"foreignKey:BranchID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 type ResponseLevel string
 
 type Session struct {
-	ID              string        `db:"id"`
-	PatientID       string        `db:"patient_id"`
-	StaffID         string        `db:"patient_id"`
-	StartTime       time.Time     `db:"start_time"`
-	EndTime         time.Time     `db:"end_time"`
-	Description     string        `db:"description"`
-	Response        ResponseLevel `db:"response"`
-	PaymentReceived sql.NullBool  `db:"payment_received"`
+	ID              string        `gorm:"primaryKey;type:uuid"`
+	PatientID       string        `gorm:"type:uuid"`
+	StaffID         string        `gorm:"type:uuid"`
+	StartTime       time.Time
+	EndTime         time.Time
+	Description     string
+	Response        ResponseLevel `gorm:"type:varchar(50)"`
+	PaymentReceived *bool
+
+	// Relationships
+	Patient         Patient       `gorm:"foreignKey:PatientID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+	Staff           Staff         `gorm:"foreignKey:StaffID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+	Activities      []Activity    `gorm:"foreignKey:SessionID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
