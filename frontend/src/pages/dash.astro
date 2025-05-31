@@ -1,0 +1,285 @@
+---
+import Date from "../components/base/date.astro";
+import Layout from "./_layout.astro";
+
+// ASTRO IMPORTS GO HERE
+---
+
+<html>
+  <head>
+    <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
+    <link
+      rel="stylesheet"
+      as="style"
+      onload="this.rel='stylesheet'"
+      href="https://fonts.googleapis.com/css2?display=swap&family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&family=Public+Sans%3Awght%40400%3B500%3B700%3B900"
+    />
+
+    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64," />
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"
+    ></script>
+  </head>
+  <Layout>
+    <body>
+      <div
+        class="relative flex size-full min-h-screen flex-col bg-[#f8fcfc] group/design-root overflow-x-hidden"
+        style='font-family: "Public Sans", "Noto Sans", sans-serif;'
+      >
+        <div class="layout-container flex h-full grow flex-col">
+          <div class="gap-1 px-6 flex flex-1 justify-center py-5">
+            <div
+              class="layout-content-container flex flex-col max-w-[960px] flex-1"
+            >
+              <div class="flex flex-wrap justify-between gap-3 p-4">
+                <div class="flex min-w-72 flex-col gap-3">
+                  <div>
+                    <div
+                      class="flex flex-wrap items-center justify-center gap-6 p-4"
+                    >
+                    </div>
+                  </div>
+                  <div class="flex flex-col">
+                    <p
+                      class="text-[#0d1c1c] tracking-light text-[32px] font-bold leading-tight"
+                    >
+                      Dashboard
+                    </p>
+                    <Date />
+                  </div>
+                  <p class="text-[#479e9e] text-sm font-normal leading-normal">
+                    Welcome back, Dr. Carter. Here's an overview of your day.
+                  </p>
+                </div>
+              </div>
+              <h2
+                class="text-[#0d1c1c] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5"
+              >
+                Today's Sessions
+              </h2>
+              <h2
+                class="text-[#0d1c1c] text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5"
+              >
+                Patient Overview
+              </h2>
+              <div class="px-4 py-3 @container">
+                <div
+                  class="flex overflow-hidden rounded border border-[#cee9e9] bg-[#f8fcfc]"
+                >
+                  <table class="flex-1">
+                    <thead>
+                      <tr class="bg-[#f8fcfc]">
+                        <th
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-120 px-4 py-3 text-left text-[#0d1c1c] w-[400px] text-sm font-medium leading-normal"
+                        >
+                          Patient Name
+                        </th>
+                        <th
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-240 px-4 py-3 text-left text-[#0d1c1c] w-[400px] text-sm font-medium leading-normal"
+                          >Age</th
+                        >
+                        <th
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-360 px-4 py-3 text-left text-[#0d1c1c] w-[400px] text-sm font-medium leading-normal"
+                        >
+                          Last Session
+                        </th>
+                        <th
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-480 px-4 py-3 text-left text-[#0d1c1c] w-[400px] text-sm font-medium leading-normal"
+                        >
+                          Next Session
+                        </th>
+                        <th
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-600 px-4 py-3 text-left text-[#0d1c1c] w-60 text-sm font-medium leading-normal"
+                          >Status</th
+                        >
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="border-t border-t-[#cee9e9]">
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-120 h-[72px] px-4 py-2 w-[400px] text-[#0d1c1c] text-sm font-normal leading-normal"
+                        >
+                          Liam Harper
+                        </td>
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-240 h-[72px] px-4 py-2 w-[400px] text-[#479e9e] text-sm font-normal leading-normal"
+                          >5</td
+                        >
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-360 h-[72px] px-4 py-2 w-[400px] text-[#479e9e] text-sm font-normal leading-normal"
+                        >
+                          2024-07-10
+                        </td>
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-480 h-[72px] px-4 py-2 w-[400px] text-[#479e9e] text-sm font-normal leading-normal"
+                        >
+                          2024-07-17
+                        </td>
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-600 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal"
+                        >
+                          <button
+                            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded h-8 px-4 bg-[#e6f4f4] text-[#0d1c1c] text-sm font-medium leading-normal w-full"
+                          >
+                            <span class="truncate">Active</span>
+                          </button>
+                        </td>
+                      </tr>
+                      <tr class="border-t border-t-[#cee9e9]">
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-120 h-[72px] px-4 py-2 w-[400px] text-[#0d1c1c] text-sm font-normal leading-normal"
+                        >
+                          Olivia Bennett
+                        </td>
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-240 h-[72px] px-4 py-2 w-[400px] text-[#479e9e] text-sm font-normal leading-normal"
+                          >7</td
+                        >
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-360 h-[72px] px-4 py-2 w-[400px] text-[#479e9e] text-sm font-normal leading-normal"
+                        >
+                          2024-07-08
+                        </td>
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-480 h-[72px] px-4 py-2 w-[400px] text-[#479e9e] text-sm font-normal leading-normal"
+                        >
+                          2024-07-15
+                        </td>
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-600 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal"
+                        >
+                          <button
+                            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded h-8 px-4 bg-[#e6f4f4] text-[#0d1c1c] text-sm font-medium leading-normal w-full"
+                          >
+                            <span class="truncate">Active</span>
+                          </button>
+                        </td>
+                      </tr>
+                      <tr class="border-t border-t-[#cee9e9]">
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-120 h-[72px] px-4 py-2 w-[400px] text-[#0d1c1c] text-sm font-normal leading-normal"
+                        >
+                          Noah Carter
+                        </td>
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-240 h-[72px] px-4 py-2 w-[400px] text-[#479e9e] text-sm font-normal leading-normal"
+                          >4</td
+                        >
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-360 h-[72px] px-4 py-2 w-[400px] text-[#479e9e] text-sm font-normal leading-normal"
+                        >
+                          2024-07-09
+                        </td>
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-480 h-[72px] px-4 py-2 w-[400px] text-[#479e9e] text-sm font-normal leading-normal"
+                        >
+                          2024-07-16
+                        </td>
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-600 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal"
+                        >
+                          <button
+                            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded h-8 px-4 bg-[#e6f4f4] text-[#0d1c1c] text-sm font-medium leading-normal w-full"
+                          >
+                            <span class="truncate">Active</span>
+                          </button>
+                        </td>
+                      </tr>
+                      <tr class="border-t border-t-[#cee9e9]">
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-120 h-[72px] px-4 py-2 w-[400px] text-[#0d1c1c] text-sm font-normal leading-normal"
+                        >
+                          Ava Mitchell
+                        </td>
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-240 h-[72px] px-4 py-2 w-[400px] text-[#479e9e] text-sm font-normal leading-normal"
+                          >6</td
+                        >
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-360 h-[72px] px-4 py-2 w-[400px] text-[#479e9e] text-sm font-normal leading-normal"
+                        >
+                          2024-07-11
+                        </td>
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-480 h-[72px] px-4 py-2 w-[400px] text-[#479e9e] text-sm font-normal leading-normal"
+                        >
+                          2024-07-18
+                        </td>
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-600 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal"
+                        >
+                          <button
+                            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded h-8 px-4 bg-[#e6f4f4] text-[#0d1c1c] text-sm font-medium leading-normal w-full"
+                          >
+                            <span class="truncate">Active</span>
+                          </button>
+                        </td>
+                      </tr>
+                      <tr class="border-t border-t-[#cee9e9]">
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-120 h-[72px] px-4 py-2 w-[400px] text-[#0d1c1c] text-sm font-normal leading-normal"
+                        >
+                          Ethan Davis
+                        </td>
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-240 h-[72px] px-4 py-2 w-[400px] text-[#479e9e] text-sm font-normal leading-normal"
+                          >8</td
+                        >
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-360 h-[72px] px-4 py-2 w-[400px] text-[#479e9e] text-sm font-normal leading-normal"
+                        >
+                          2024-07-12
+                        </td>
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-480 h-[72px] px-4 py-2 w-[400px] text-[#479e9e] text-sm font-normal leading-normal"
+                        >
+                          2024-07-19
+                        </td>
+                        <td
+                          class="table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-600 h-[72px] px-4 py-2 w-60 text-sm font-normal leading-normal"
+                        >
+                          <button
+                            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded h-8 px-4 bg-[#e6f4f4] text-[#0d1c1c] text-sm font-medium leading-normal w-full"
+                          >
+                            <span class="truncate">Active</span>
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <style>
+                  @container (max-width:120px) {
+                    .table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-120 {
+                      display: none;
+                    }
+                  }
+                  @container (max-width:240px) {
+                    .table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-240 {
+                      display: none;
+                    }
+                  }
+                  @container (max-width:360px) {
+                    .table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-360 {
+                      display: none;
+                    }
+                  }
+                  @container (max-width:480px) {
+                    .table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-480 {
+                      display: none;
+                    }
+                  }
+                  @container (max-width:600px) {
+                    .table-7e003562-aa39-44fa-bfd6-7571bdcf01a2-column-600 {
+                      display: none;
+                    }
+                  }
+                </style>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </body>
+  </Layout>
+</html>
