@@ -36,18 +36,18 @@ backend-dev:
 
 db-up:
     # Start local database in Docker
-    cd backend
-    bun run db:up
+    cd backend/internal/db && docker compose up -d
 
 db-down:
     # Stop local database in Docker
-    cd backend 
-    bun run db:down
+    cd backend/internal/db && docker compose down
 
-db-gen:
-    # Generate SQL for database schema
-    cd backend/cmd/server && go generate
+db-restart:
+    # Restart local database in Docker
+    cd backend/internal/db && docker compose restart
 
+# db-gen:
+#     # Generate SQL for database schema
 # db-migrate:
 #     # Apply database migrations
 #     cd backend
