@@ -1,4 +1,6 @@
-package schema
+package impl
+
+// backend/internal/repository/impl/session.go
 
 import (
 	"time"

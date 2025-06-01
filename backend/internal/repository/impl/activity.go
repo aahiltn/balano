@@ -1,5 +1,6 @@
-package schema
+package impl
 
+// backend/internal/repository/impl/activity.go
 import (
 	"palaam/internal/models"
 

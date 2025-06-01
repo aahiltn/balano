@@ -1,4 +1,6 @@
-package schema
+package impl
+
+// backend/internal/repository/impl/medicine.go
 
 import (
 	"palaam/internal/models"
