@@ -2,9 +2,24 @@ package repository
 
 import (
 	"palaam/internal/models"
+	"time"
 
 	"gorm.io/gorm"
 )
+
+type Repository struct {
+	Assessment         AssessmentRepository
+	OperatingHours     OperatingHoursRepository
+	Staff              StaffRepository
+	Activity           ActivityRepository
+	Session            SessionRepository
+	Patient            PatientRepository
+	Guardian           GuardianRepository
+	OnboardingQuestion OnboardingQuestionRepository
+	OnboardingResponse OnboardingResponseRepository
+	Medicine           MedicineRepository
+	Branch             BranchRepository
+}
 
 // AssessmentRepository defines the interface for assessment repository operations
 type AssessmentRepository interface {
@@ -39,21 +54,21 @@ type StaffRepository interface {
 type ActivityRepository interface {
 	NewActivityRepository(db *gorm.DB) *ActivityRepository
 	Create(activity *models.Activity) error
-	FindByID(id int) (*models.Activity, error)
-	FindBySessionID(name string) (*models.Activity, error)
-	Update(id int, updates map[string]interface{}) error
-	Delete(id int) error
+	FindByID(id string) (*models.Activity, error)
+	FindBySessionID(name string) ([]*models.Activity, error)
+	Update(id string, updates map[string]interface{}) error
+	Delete(id string) error
 }
 
 type SessionRepository interface {
-	NewSessionRepository(db *gorm.DB) *SessionRepository
 	Create(session *models.Session) error
-	FindByID(id int) (*models.Session, error)
-	FindByDateRange(branchID int, startDate, endDate string) ([]*models.Session, error)
+	FindByID(id string) (*models.Session, error)
+	FindByDateRange(branchID int, startDate, endDate time.Time) ([]*models.Session, error)
 	FindByPatientID(patientID string) ([]*models.Session, error)
 	FindByStaffID(staffID string) ([]*models.Session, error)
-	Update(id string, updates map[string]interface{}) error
+	Update(id string, updates map[string]interface{}) (*models.Session, error)
 	Delete(id string) error
+	CheckOverlappingSessions(patientID string, startTime, endTime time.Time, excludeSessionId string) (bool, error)
 }
 
 type PatientRepository interface {

@@ -66,6 +66,7 @@ type Medicine struct {
 	ID           string `gorm:"primaryKey;type:uuid"`
 	Name         string
 	BrandName    *string
+	Dosage       *string
 	PatientID    string `gorm:"type:uuid"`
 	PrescriberID string `gorm:"type:uuid"` // Refers to Staff (Doctor)
 
@@ -101,6 +102,7 @@ type Session struct {
 	ID              string `gorm:"primaryKey;type:uuid"`
 	PatientID       string `gorm:"type:uuid"`
 	StaffID         string `gorm:"type:uuid"`
+	BranchID        *int   `gorm:"type:int"`
 	StartTime       time.Time
 	EndTime         time.Time
 	Description     string
@@ -108,9 +110,11 @@ type Session struct {
 	PaymentReceived *bool
 
 	// Relationships
-	Patient    Patient    `gorm:"foreignKey:PatientID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
-	Staff      Staff      `gorm:"foreignKey:StaffID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
-	Activities []Activity `gorm:"foreignKey:SessionID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Patient        Patient          `gorm:"foreignKey:PatientID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+	Staff          Staff            `gorm:"foreignKey:StaffID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+	Activities     []Activity       `gorm:"foreignKey:SessionID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Branch         *Branch          `gorm:"foreignKey:BranchID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	OperatingHours []OperatingHours `gorm:"foreignKey:BranchID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 }
 
 type Assessment struct {

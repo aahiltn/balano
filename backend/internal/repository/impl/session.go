@@ -14,6 +14,7 @@ type SessionRepository struct {
 	db *gorm.DB
 }
 
+// NewSessionRepository creates a new instance of SessionRepository
 func NewSessionRepository(db *gorm.DB) *SessionRepository {
 	return &SessionRepository{db: db}
 }
@@ -33,9 +34,9 @@ func (r *SessionRepository) FindByID(id string) (*models.Session, error) {
 }
 
 // Find sessions by date range
-func (r *SessionRepository) FindByDateRange(startDate, endDate time.Time) ([]*models.Session, error) {
+func (r *SessionRepository) FindByDateRange(branchId int, startDate, endDate time.Time) ([]*models.Session, error) {
 	var sessions []*models.Session
-	if err := r.db.Where("start_time >= ? AND end_time <= ?", startDate, endDate).Find(&sessions).Error; err != nil {
+	if err := r.db.Where("branch_id = ? AND start_time >= ? AND end_time <= ?", branchId, startDate, endDate).Find(&sessions).Error; err != nil {
 		return nil, err
 	}
 	return sessions, nil
@@ -60,11 +61,35 @@ func (r *SessionRepository) FindByStaffID(staffID string) ([]*models.Session, er
 }
 
 // Update a session
-func (r *SessionRepository) Update(id string, updates map[string]interface{}) error {
-	return r.db.Model(&models.Session{}).Where("id = ?", id).Updates(updates).Error
+func (r *SessionRepository) Update(id string, updates map[string]interface{}) (*models.Session, error) {
+	var session models.Session
+	if err := r.db.Model(&session).Where("id = ?", id).Updates(updates).Error; err != nil {
+		return nil, err
+	}
+	return &session, nil
 }
 
 // Delete a session
 func (r *SessionRepository) Delete(id string) error {
 	return r.db.Delete(&models.Session{}, "id = ?", id).Error
+}
+
+// CheckOverlappingSessions checks if there are any sessions overlapping with the given time range for a specific staff
+func (r *SessionRepository) CheckOverlappingSessions(staffID string, startTime, endTime time.Time, excludeSessionID string) (bool, error) {
+	var count int64
+	query := r.db.Model(&models.Session{}).
+		Where("staff_id = ? AND ((start_time < ? AND end_time > ?) OR (start_time >= ? AND start_time < ?))",
+			staffID, endTime, startTime, startTime, endTime)
+
+	// Exclude the current session when checking for updates
+	if excludeSessionID != "" {
+		query = query.Where("id <> ?", excludeSessionID)
+	}
+
+	err := query.Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
 }

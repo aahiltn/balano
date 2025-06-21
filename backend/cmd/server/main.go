@@ -11,8 +11,10 @@ import (
 	"palaam/internal/config"
 	"palaam/internal/service"
 
+	"github.com/gofiber/fiber/v2"
 	_ "github.com/lib/pq"
 	"github.com/sethvargo/go-envconfig"
+	"github.com/watchakorn-18k/scalar-go"
 )
 
 func main() {
@@ -22,11 +24,31 @@ func main() {
 		log.Fatalln("Error processing .env file: ", err)
 	}
 
-	app := service.InitApp(config)
-	defer app.Repo.Close()
+	app := fiber.New(fiber.Config{
+		AppName: config.Application.Name,
+	})
+	appService := service.NewServer(config)
+
+	routes.AppRouter(app, appService)
+
+	app.Use("/docs", func(c *fiber.Ctx) error {
+		htmlContent, err := scalar.ApiReferenceHTML(&scalar.Options{
+			SpecURL: "openapi.yaml",
+			CustomOptions: scalar.CustomOptions{
+				PageTitle: "Palaam API Documentation",
+			},
+			DarkMode: true,
+		})
+
+		if err != nil {
+			return err
+		}
+		c.Type("html")
+		return c.SendString(htmlContent)
+	})
 
 	go func() {
-		if err := app.Server.Listen(":" + config.Application.Port); err != nil {
+		if err := app.Listen(":" + config.Application.Port); err != nil {
 			log.Fatalf("Failed to start server: %v", err)
 		}
 	}()
@@ -37,7 +59,7 @@ func main() {
 	<-quit
 
 	slog.Info("Shutting down server")
-	if err := app.Server.Shutdown(); err != nil {
+	if err := app.Shutdown(); err != nil {
 		slog.Error("failed to shutdown server", "error", err)
 	}
 

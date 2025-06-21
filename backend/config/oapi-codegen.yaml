@@ -4,5 +4,5 @@ generate:
   models: true
   fiber-server: true
 additional-imports:
-  - package: "github.com/aahiltn/balano/internal/db/models"
+  - package: "github.com/aahiltn/palaam/internal/db/models"
     alias: models
